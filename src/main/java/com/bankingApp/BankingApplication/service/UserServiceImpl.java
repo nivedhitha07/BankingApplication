@@ -1,6 +1,7 @@
 package com.bankingApp.BankingApplication.service;
 
 import com.bankingApp.BankingApplication.dto.AccountInfo;
+import com.bankingApp.BankingApplication.dto.EmailDetails;
 import com.bankingApp.BankingApplication.dto.Response;
 import com.bankingApp.BankingApplication.dto.UserRequest;
 import com.bankingApp.BankingApplication.entity.User;
@@ -17,6 +18,9 @@ public class UserServiceImpl implements UserService{
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
+
+    @Autowired
+    EmailService emailService;
 
 
 
@@ -42,6 +46,13 @@ public class UserServiceImpl implements UserService{
                 .status("ACTIVE")
                 .build();
         User savedUser=userRepository.save(user);
+        //sends email alert
+        EmailDetails emailDetails=EmailDetails.builder()
+                        .recipient(savedUser.getEmail())
+                        .subject("ACCOUNT CREATION")
+                        .messageBody("Congrats, your account has been created with account number "+savedUser.getAccountNumber())
+                        .build();
+        emailService.sendEmailAlert(emailDetails);
         return Response.builder()
                 .responseCode(AccountUtils.ACCOUNT_CREATION_CODE)
                 .responseMessage(AccountUtils.ACCOUNT_CREATION_MESSAGE)
